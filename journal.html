@@ -38,13 +38,13 @@
             </div>
         </nav>
         
-        <main class="main-content">
+        <main class="main-content1">
             <header class="header">
                 <h1 class="app-title">Trek Journal</h1>
             </header>
 
-            <section class="map-section">
-                <div class="map-container">
+            <section class="map-section1">
+                <div class="map-container1">
                     <div id='map' style='width: 100%; height: 100%;'></div>
                     
                     <!-- Layer control buttons -->
@@ -55,36 +55,10 @@
                     </div>
                 </div>
                 
-                <!-- Tracking controls now outside the map -->
                 <div class="tracking-controls">
                     <button id="startTracking">Start Tracking</button>
                     <button id="stopTracking" disabled>Stop Tracking</button>
                 </div>
-            </section>
-
-            <section class="insights">
-                <h2 class="insights-title">Monthly Insights -</h2>
-                <div class="insights-grid">
-                    <div class="insight-card">30km</div>
-                    <div class="insight-card">20 Entries</div>
-                    <div class="insight-card">5 Goals</div>
-                </div>
-            </section>
-
-            <section class="entries-list">
-                <article class="entry-card">
-                    <div class="entry-date">5th Oct 2024</div>
-                    <div class="entry-location">Mount Tamborine</div>
-                    <p>Nice walk, great weather. Procrastinating presentation, will do later.</p>
-                    <div class="entry-coordinates">46.8523° N, 121.7603° W</div>
-                </article>
-
-                <article class="entry-card">
-                    <div class="entry-date">4th Oct 2024</div>
-                    <div class="entry-location">Home Day</div>
-                    <p>Walked the dog and had work</p>
-                    <div class="entry-coordinates">46.8523° N, 121.7603° W</div>
-                </article>
             </section>
         </main>
     </div>
@@ -93,8 +67,8 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoiYXRyb3VnaHRvbjAiLCJhIjoiY20ydTVobzk2MDZ4aTJxcG52ZWVmbTVoayJ9.0-MtCojihJsfD5HW-1Z7jw';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7',
-            zoom: 13
+            style: 'mapbox://styles/mapbox/outdoors-v12',
+            zoom: 17
         });
         
         const nav = new mapboxgl.NavigationControl();
