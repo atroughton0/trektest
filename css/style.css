@@ -1,0 +1,249 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+}
+
+.app-container {
+    display: grid;
+    min-height: 100vh;
+    grid-template-columns: auto 1fr;
+}
+
+.nav-sidebar {
+    background-color: #ffffff;
+    width: 72px;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    border-right: 1px solid #eaeaea;
+}
+
+.nav-item {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+}
+
+.nav-item:hover {
+    background-color: #f0f0f0;
+}
+
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.app-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.new-entry-btn {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Map Section Styles */
+.map-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 2rem;
+}
+
+.map-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 1%;
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+.tracking-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.tracking-controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#startTracking {
+    background-color: #1a1a1a;
+    color: white;
+}
+
+#startTracking:hover {
+    background-color: #333333;
+}
+
+#stopTracking {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+#stopTracking:hover {
+    background-color: #e0e0e0;
+}
+
+.tracking-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Layer control styling */
+.layer-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 3px;
+    border-radius: 5px;
+}
+
+.layer-controls button {
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.layer-controls button:hover {
+    background-color: #e0e0e0;
+}
+
+.insights {
+    margin-bottom: 2rem;
+}
+
+.insights-title {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.insight-card {
+    background-color: #f0f0f0;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.entries-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.entry-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.entry-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.entry-location {
+    font-weight: 500;
+}
+
+.entry-coordinates {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 0.5rem;
+        border-top: 1px solid #eaeaea;
+        background-color: #ffffff;
+        z-index: 1000;
+    }
+
+    .main-content {
+        padding: 1rem;
+        padding-bottom: 70px;
+    }
+
+    .map-container {
+        height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .insights-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
