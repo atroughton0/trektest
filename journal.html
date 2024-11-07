@@ -95,27 +95,27 @@
                 { enableHighAccuracy: true }
             );
         }
-
+    
         function startTracking() {
             if (navigator.geolocation) {
                 tracking = true;
                 tripData = [];
                 document.getElementById("startTracking").disabled = true;
                 document.getElementById("stopTracking").disabled = false;
-
+    
                 watchID = navigator.geolocation.watchPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
                         const userLocation = [longitude, latitude];
                         map.setCenter(userLocation);
-
+    
                         // Add marker for user's location if not already there
                         if (!map.userMarker) {
                             map.userMarker = new mapboxgl.Marker().setLngLat(userLocation).addTo(map);
                         } else {
                             map.userMarker.setLngLat(userLocation);
                         }
-
+    
                         // Record location data
                         tripData.push({
                             timestamp: Date.now(),
@@ -129,27 +129,68 @@
                 console.error("Geolocation is not supported by this browser.");
             }
         }
-
+    
         function stopTracking() {
             if (tracking) {
                 tracking = false;
                 navigator.geolocation.clearWatch(watchID);
                 document.getElementById("startTracking").disabled = false;
                 document.getElementById("stopTracking").disabled = true;
-
-                // Save tripData to localStorage or server (placeholder functionality)
+    
+                // Redraw the journey path using the collected tripData
+                drawJourneyPath();
+    
+                // Optionally save tripData to localStorage or server (placeholder functionality)
                 console.log("Trip Data:", tripData);
             }
         }
-
+    
+        // Function to draw the journey path on the map
+        function drawJourneyPath() {
+            // Create a GeoJSON object for the path
+            const geojson = {
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: tripData.map(entry => entry.coordinates)
+                }
+            };
+    
+            // Add the journey path as a new source and layer
+            if (map.getSource('journeyPath')) {
+                map.removeLayer('journeyPath');
+                map.removeSource('journeyPath');
+            }
+    
+            map.addSource('journeyPath', {
+                type: 'geojson',
+                data: geojson
+            });
+    
+            map.addLayer({
+                id: 'journeyPath',
+                type: 'line',
+                source: 'journeyPath',
+                paint: {
+                    'line-color': '#FF0000',
+                    'line-width': 4
+                }
+            });
+    
+            // Fit map bounds to the journey path
+            const bounds = new mapboxgl.LngLatBounds();
+            geojson.geometry.coordinates.forEach(coord => bounds.extend(coord));
+            map.fitBounds(bounds, { padding: 20 });
+        }
+    
         // Add event listeners to the buttons
         document.getElementById("startTracking").addEventListener("click", startTracking);
         document.getElementById("stopTracking").addEventListener("click", stopTracking);
-
+    
         // Function to change map style
         function changeMapStyle(styleURL) {
             map.setStyle(styleURL);
         }
-    </script>
+    </script>    
 </body>
 </html>
