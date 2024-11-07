@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trek Journal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="index.html">
+                    <img src="images/homeOn.png" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <!-- Add other nav items as needed -->
+        </nav>
+        
+        <main class="main-content">
+            <header class="header">
+                <h1 class="app-title">Trek Journal</h1>
+                <button class="new-entry-btn">+ New Entry</button>
+            </header>
+
+            <div class="map-container">
+                <div id='map' style='width: 100%; height: 500px;'></div>
+                <script>
+                mapboxgl.accessToken = 'pk.eyJ1IjoiYXRyb3VnaHRvbjAiLCJhIjoiY20ydTVobzk2MDZ4aTJxcG52ZWVmbTVoayJ9.0-MtCojihJsfD5HW-1Z7jw';
+
+                const map = new mapboxgl.Map({
+                    container: 'map', 
+                    style: 'mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7', 
+                    center: [-74.5, 40], 
+                    zoom: 14 
+                });
+
+                // Initialize an empty array to store the path coordinates
+                const pathCoordinates = [];
+
+                // Function to track user's location
+                function trackPosition(position) {
+                    const { latitude, longitude } = position.coords;
+                    const currentPosition = [longitude, latitude];
+                    
+                    // Add the new position to the path
+                    pathCoordinates.push(currentPosition);
+
+                    // Center the map on the current position
+                    map.setCenter(currentPosition);
+
+                    // Add a marker for the current position
+                    new mapboxgl.Marker({ color: "red" })
+                        .setLngLat(currentPosition)
+                        .addTo(map);
+
+                    // Update or create the path line
+                    if (map.getSource('path')) {
+                        map.getSource('path').setData({
+                            'type': 'Feature',
+                            'geometry': {
+                                'type': 'LineString',
+                                'coordinates': pathCoordinates
+                            }
+                        });
+                    } else {
+                        map.addSource('path', {
+                            'type': 'geojson',
+                            'data': {
+                                'type': 'Feature',
+                                'geometry': {
+                                    'type': 'LineString',
+                                    'coordinates': pathCoordinates
+                                }
+                            }
+                        });
+
+                        map.addLayer({
+                            'id': 'pathLine',
+                            'type': 'line',
+                            'source': 'path',
+                            'layout': {},
+                            'paint': {
+                                'line-color': '#3b9ddd',
+                                'line-width': 4
+                            }
+                        });
+                    }
+                }
+
+                // Error handling for geolocation
+                function locationError(error) {
+                    console.warn(`ERROR(${error.code}): ${error.message}`);
+                }
+
+                // Watch the user's position and update the map
+                if (navigator.geolocation) {
+                    navigator.geolocation.watchPosition(trackPosition, locationError, {
+                        enableHighAccuracy: true,
+                        maximumAge: 1000
+                    });
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+                </script>
+            </div>
+
+            <section class="insights">
+                <h2 class="insights-title">Monthly Insights</h2>
+                <div class="insights-grid">
+                    <div class="insight-card">30km</div>
+                    <div class="insight-card">20 Entries</div>
+                    <div class="insight-card">5 Goals</div>
+                </div>
+            </section>
+
+            <section class="entries-list">
+                <article class="entry-card">
+                    <div class="entry-date">5th Oct 2024</div>
+                    <div class="entry-location">Mount Tamborine</div>
+                    <p>Nice walk, great weather. Procrastinating presentation, will do later.</p>
+                    <div class="entry-coordinates">46.8523° N, 121.7603° W</div>
+                </article>
+                <!-- Additional entries as needed -->
+            </section>
+        </main>
+    </div>
+</body>
+</html>
