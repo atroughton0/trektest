@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trek Journal - Log </title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="/">
+                    <img src="{{url_for('static', filename='images/home.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/journal">
+                    <img src="{{url_for('static', filename='images/mapOn.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/list">
+                    <img src="{{url_for('static', filename='images/list.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/calendar">
+                    <img src="{{url_for('static', filename='images/calendar.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content1">
+            <header class="header">
+                <h1 class="app-title">Trek Journal</h1>
+            </header>
+
+            <section class="map-section1">
+                <div class="map-container1">
+                    <div id='map' style='width: 100%; height: 100%;'></div>
+                    
+                    <!-- Layer control buttons -->
+                    <div class="layer-controls">
+                        <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7')" title="Novel">📖</button>
+                        <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm377mlbj003001q33hnm157q')" title="Outdoors">⛅</button>
+                        <button onclick="changeMapStyle('mapbox://styles/mapbox/satellite-v9')" title="Satellite">🛰️</button>
+                    </div>
+                </div>
+                
+                <div class="tracking-controls">
+                    <button id="startTracking">Start Tracking</button>
+                    <button id="stopTracking" disabled>Stop Tracking</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYXRyb3VnaHRvbjAiLCJhIjoiY20ydTVobzk2MDZ4aTJxcG52ZWVmbTVoayJ9.0-MtCojihJsfD5HW-1Z7jw';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/atroughton0/cm377mlbj003001q33hnm157q',
+            zoom: 17
+        });
+        
+        const nav = new mapboxgl.NavigationControl();
+        map.addControl(nav, 'top-right');
+        
+        let tracking = false;
+        let watchID;
+        let tripData = [];
+        let runningDistance = 0; // Variable to store total distance in meters
+        let lastPosition = null; // Variable to store the last position
+        
+        // Center map on user's location when page loads
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const userLocation = [longitude, latitude];
+                    map.setCenter(userLocation);
+                    
+                    // Add initial marker
+                    new mapboxgl.Marker()
+                        .setLngLat(userLocation)
+                        .addTo(map);
+                },
+                () => console.error("Location access denied or unavailable."),
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function startTracking() {
+            if (navigator.geolocation) {
+                tracking = true;
+                tripData = [];
+                runningDistance = 0; // Reset the distance
+                lastPosition = null; // Reset the last position
+                document.getElementById("startTracking").disabled = true;
+                document.getElementById("stopTracking").disabled = false;
+
+                watchID = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        const userLocation = [longitude, latitude];
+                        map.setCenter(userLocation);
+
+                        // Add marker for user's location if not already there
+                        if (!map.userMarker) {
+                            map.userMarker = new mapboxgl.Marker().setLngLat(userLocation).addTo(map);
+                        } else {
+                            map.userMarker.setLngLat(userLocation);
+                        }
+
+                        // If there's a previous position, calculate the distance
+                        if (lastPosition) {
+                            runningDistance += calculateDistance(lastPosition, userLocation);
+                        }
+                        lastPosition = userLocation; // Update last position
+
+                        // Record location data
+                        tripData.push({
+                            timestamp: Date.now(),
+                            coordinates: userLocation
+                        });
+                    },
+                    () => console.error("Location access denied or unavailable."),
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
+function getDayOfWeek(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-GB', { weekday: 'long' });
+}
+
+function stopTracking() {
+    if (tracking) {
+        tracking = false;
+        navigator.geolocation.clearWatch(watchID);
+        document.getElementById("startTracking").disabled = false;
+        document.getElementById("stopTracking").disabled = true;
+
+        // Draw the journey path
+        drawJourneyPath();
+
+        // Prepare trip data with formatted timestamps
+        const tripDetails = {
+            dayOfWeek: getDayOfWeek(tripData[0]?.timestamp), // Separate field for day of the week
+            startTime: formatTimestamp(tripData[0]?.timestamp),
+            endTime: formatTimestamp(tripData[tripData.length - 1]?.timestamp),
+            coordinates: tripData.map(entry => ({
+                timestamp: formatTimestamp(entry.timestamp),
+                location: entry.coordinates
+            })),
+            distance: runningDistance, // Use real-time calculated distance
+            duration: tripData[tripData.length - 1]?.timestamp - tripData[0]?.timestamp
+        };
+
+        // Send trip data to backend
+        fetch('/save_trip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tripDetails)
+        })
+        .then(response => response.json())
+    }
+}
+        // Function to draw the journey path on the map
+        function drawJourneyPath() {
+            // Create a GeoJSON object for the path
+            const geojson = {
+                type: 'Feature',
+                geometry: {
+                    type: 'LineString',
+                    coordinates: tripData.map(entry => entry.coordinates)
+                }
+            };
+
+            // Add the journey path as a new source and layer
+            if (map.getSource('journeyPath')) {
+                map.removeLayer('journeyPath');
+                map.removeSource('journeyPath');
+            }
+
+            map.addSource('journeyPath', {
+                type: 'geojson',
+                data: geojson
+            });
+
+            map.addLayer({
+                id: 'journeyPath',
+                type: 'line',
+                source: 'journeyPath',
+                paint: {
+                    'line-color': '#FF0000',
+                    'line-width': 4
+                }
+            });
+
+            // Fit map bounds to the journey path
+            const bounds = new mapboxgl.LngLatBounds();
+            geojson.geometry.coordinates.forEach(coord => bounds.extend(coord));
+            map.fitBounds(bounds, { padding: 20 });
+        }
+
+        // Add event listeners to the buttons
+        document.getElementById("startTracking").addEventListener("click", startTracking);
+        document.getElementById("stopTracking").addEventListener("click", stopTracking);
+
+        // Function to change map style
+        function changeMapStyle(style) {
+            map.setStyle(style);
+        }
+    </script>
+</body>
+</html>

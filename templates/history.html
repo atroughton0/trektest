@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Entry - Trek Journal</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="/">
+                    <img src="{{url_for('static', filename='images/home.png')}}" alt="Home" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/journal">
+                    <img src="{{url_for('static', filename='images/map.png')}}" alt="Journal" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/list">
+                    <img src="{{url_for('static', filename='images/listOn.png')}}" alt="List" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/calendar">
+                    <img src="{{url_for('static', filename='images/calendar.png')}}" alt="Calendar" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <header class="header">
+                <h1 class="app-title">Trek Journal</h1>
+                <p>Record your journey</p>
+            </header>
+            
+            <section class="journal-entry-section">
+                <form action="/save_journal_entry" method="POST" enctype="multipart/form-data">
+                    <div>
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    
+                    <div>
+                        <label for="entry">Journal Entry</label>
+                        <textarea id="entry" name="entry" rows="4" placeholder="Write about your trek..." required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="image">Photos</label>
+                        <input type="file" id="image" name="image" accept="image/*">
+                    </div>
+                    
+                    <button type="submit">Save Entry</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

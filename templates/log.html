@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trek Journal - Log</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet" />
+</head>
+<style>
+.event-item {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap onto new lines if they overflow */
+    gap: 10px; /* Add space between the items */
+}
+
+.event-item p {
+    font-size: 14px; /* Reduce font size to fit content better */
+}
+
+/* Style for map container to position the buttons */
+.map-container2 {
+    position: relative;
+    height: 500px; /* You can adjust the height as per your layout */
+}
+
+.layer-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 5px;
+}
+
+.layer-controls button {
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.layer-controls button:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+</style>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="/">
+                    <img src="{{url_for('static', filename='images/home.png')}}" style="height: 24px; width: 24px;" alt="Home">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/journal">
+                    <img src="{{url_for('static', filename='images/map.png')}}" style="height: 24px; width: 24px;" alt="Journal">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/list">
+                    <img src="{{url_for('static', filename='images/list.png')}}" style="height: 24px; width: 24px;" alt="List">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/calendar">
+                    <img src="{{url_for('static', filename='images/calendar.png')}}" style="height: 24px; width: 24px;" alt="Calendar">
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content1">
+            <header class="header">
+                <h1 class="app-title">Trek Journal - Event Log</h1>
+                <p>Details for: <strong>{{ selected_date }}</strong></p>
+            </header>
+
+            <div class="map-trip-container">
+                {% if trips|length > 0 %}
+                <div class="map-container2">
+                    <div id="map"></div>
+                    <!-- Buttons inside map container -->
+                    <div class="layer-controls">
+                        <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7')" title="Novel">📖</button>
+                        <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm377mlbj003001q33hnm157q')" title="Outdoors">⛅</button>
+                        <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm3ax49si00g301ptcqgrh7ar')" title="Satellite">🛰️</button>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="trip-details">
+                    <ul class="event-list">
+                        {% for trip in trips %}
+                            <li class="event-item">
+                                <h3>Trip {{ loop.index }}</h3>
+                                <p><strong>Start Time:</strong> {{ trip.startTime }}</p>
+                                <p><strong>End Time:</strong> {{ trip.endTime }}</p>
+                                <p><strong>Distance:</strong> {{ trip.distance }} meters</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            {% if journal_entry %}
+                <section class="journal-section">
+                    <h2>Journal Entry</h2>
+                    <p>{{ journal_entry.entry }}</p>
+                    {% if journal_entry.image_path %}
+                        <img src="{{ url_for('static', filename='uploads/' + journal_entry.image_path) }}" 
+                             alt="Journal Image">
+                    {% endif %}
+                </section>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYXRyb3VnaHRvbjAiLCJhIjoiY20ydTVobzk2MDZ4aTJxcG52ZWVmbTVoayJ9.0-MtCojihJsfD5HW-1Z7jw';
+
+        let map;
+        const combinedCoordinates = {{ combined_coordinates | tojson | safe }};
+
+        if (combinedCoordinates.length > 0) {
+            const firstCoordinate = combinedCoordinates[0].location;
+            map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/atroughton0/cm377mlbj003001q33hnm157q',
+                center: firstCoordinate,
+                zoom: 13 // Reduced zoom to prevent map from zooming in too much
+            });
+
+            map.on('load', drawJourneyPath);
+        }
+
+        function drawJourneyPath() {
+    if (combinedCoordinates.length === 0) return;
+
+    const coordinates = combinedCoordinates.map(coord => coord.location);
+
+    const geojson = {
+        type: 'Feature',
+        geometry: {
+            type: 'LineString',
+            coordinates: coordinates
+        }
+    };
+
+    map.addSource('journeyPath', {
+        type: 'geojson',
+        data: geojson
+    });
+
+    map.addLayer({
+        id: 'journeyPath',
+        type: 'line',
+        source: 'journeyPath',
+        paint: {
+            'line-color': '#FF0000',
+            'line-width': 4
+        }
+    });
+
+    const bounds = new mapboxgl.LngLatBounds();
+    coordinates.forEach(coord => bounds.extend(coord));
+
+    // Adjust the fitBounds and add max zoom to prevent over-zooming
+    map.fitBounds(bounds, { padding: 80 });
+}
+
+
+        // Enhanced resize handler
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            // Clear the timeout if it exists
+            if (resizeTimeout) {
+                clearTimeout(resizeTimeout);
+            }
+            
+            // Set a timeout to avoid excessive map updates
+            resizeTimeout = setTimeout(() => {
+                if (map) {
+                    map.resize();
+                }
+            }, 100);
+        });
+
+        function changeMapStyle(styleURL) {
+    map.setStyle(styleURL);
+
+    // Ensure the journey path is redrawn after changing the map style
+    map.on('style.load', function() {
+        drawJourneyPath();
+    });
+}
+    </script>
+</body>
+</html>

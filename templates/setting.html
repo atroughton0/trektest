@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trek Journal - Settings</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="/">
+                    <img src="{{url_for('static', filename='images/home.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/journal">
+                    <img src="{{url_for('static', filename='images/map.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/list">
+                    <img src="{{url_for('static', filename='images/list.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/calendar">
+                    <img src="{{url_for('static', filename='images/calendar.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/settings">
+                    <img src="{{url_for('static', filename='images/settingOn.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <header class="header">
+                <h1 class="app-title">Trek Journal</h1>
+                <button class="new-entry-btn">+ New Entry</button>
+            </header>
+
+            <div class="map-container">
+                <div id='map' style='width: 100%; height: 100%;'></div>
+                <script>
+                    mapboxgl.accessToken = 'pk.eyJ1IjoiYXRyb3VnaHRvbjAiLCJhIjoiY20ydTVobzk2MDZ4aTJxcG52ZWVmbTVoayJ9.0-MtCojihJsfD5HW-1Z7jw';
+                    const map = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7',
+                        zoom: 14
+                    });
+    
+                    // Add zoom and rotation controls to the map
+                    const nav = new mapboxgl.NavigationControl();
+                    map.addControl(nav, 'top-right');
+    
+                    // Track user's location continuously
+                    if (navigator.geolocation) {
+                        navigator.geolocation.watchPosition(
+                            (position) => {
+                                const userLocation = [position.coords.longitude, position.coords.latitude];
+                                map.setCenter(userLocation);
+    
+                                // Add or update the marker at the user's location
+                                if (!map.userMarker) {
+                                    map.userMarker = new mapboxgl.Marker().setLngLat(userLocation).addTo(map);
+                                } else {
+                                    map.userMarker.setLngLat(userLocation);
+                                }
+                            },
+                            () => {
+                                console.error("Location access denied or unavailable.");
+                            },
+                            { enableHighAccuracy: true }
+                        );
+                    } else {
+                        console.error("Geolocation is not supported by this browser.");
+                    }
+    
+                    // Function to change map style
+                    function changeMapStyle(styleURL) {
+                        map.setStyle(styleURL);
+                    }
+                </script>
+    
+                <!-- Layer control buttons -->
+                <div class="layer-controls">
+                    <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm35kt3c900zb01pwgl3qbkz7')" title="Novel">📖</button>
+                    <button onclick="changeMapStyle('mapbox://styles/atroughton0/cm377mlbj003001q33hnm157q')" title="Outdoors">⛅</button>
+                    <button onclick="changeMapStyle('mapbox://styles/mapbox/satellite-v9')" title="Satellite">🛰️</button>
+                </div>
+            </div>
+
+            <section class="insights">
+                <h2 class="insights-title">Monthly Insights -</h2>
+                <div class="insights-grid">
+                    <div class="insight-card">30km</div>
+                    <div class="insight-card">20 Entries</div>
+                    <div class="insight-card">5 Goals</div>
+                </div>
+            </section>
+
+            <section class="entries-list">
+                <article class="entry-card">
+                    <div class="entry-date">5th Oct 2024</div>
+                    <div class="entry-location">Mount Tamborine</div>
+                    <p>Nice walk, great weather. Procrastinating presentation, will do later.</p>
+                    <div class="entry-coordinates">46.8523° N, 121.7603° W</div>
+                </article>
+
+                <article class="entry-card">
+                    <div class="entry-date">4th Oct 2024</div>
+                    <div class="entry-location">Home Day</div>
+                    <p>Walked the dog and had work</p>
+                    <div class="entry-coordinates">46.8523° N, 121.7603° W</div>
+                </article>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

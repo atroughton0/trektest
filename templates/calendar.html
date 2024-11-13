@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trek Journal - Calendar</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="app-container">
+        <nav class="nav-sidebar">
+            <div class="nav-item">
+                <a href="/">
+                    <img src="{{url_for('static', filename='images/home.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/journal">
+                    <img src="{{url_for('static', filename='images/map.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/list">
+                    <img src="{{url_for('static', filename='images/list.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/calendar">
+                    <img src="{{url_for('static', filename='images/calendarOn.png')}}" style="height: 24px; width: 24px;">
+                </a>
+            </div>
+        </nav>
+        <main class="main-content">
+            <header class="header">
+                <h1 class="app-title">Trek Journal</h1>
+            </header>
+            <div class="calendar-container">
+                {% if events %}
+                    {% for event in events %}
+                        <div class="date-group" onclick="location.href = '/log?date={{ event.tripDate }}'">
+                            <h2>{{ event.day }}</h2>
+                            <h5>{{ event.tripDate }}</h5>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-events">No trips recorded yet.</p>
+                {% endif %}
+            </div>
+                      
+        </main>
+    </div>
+</body>
+</html>
